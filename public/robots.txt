@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://gullyscore.app/sitemap.xml
+Sitemap: https://gullycricketscore.vercel.app/sitemap.xml
