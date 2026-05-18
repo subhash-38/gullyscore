@@ -1,0 +1,129 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Light theme (default for SSR; flips to dark on mount if user prefers) */
+    --bg: 250 250 250;
+    --bg-soft: 244 244 245;
+    --bg-card: 255 255 255;
+    --fg: 17 24 39;
+    --fg-muted: 75 85 99;
+    --fg-dim: 156 163 175;
+    --border: 229 231 235;
+  }
+
+  html.dark {
+    --bg: 11 15 20;
+    --bg-soft: 17 24 33;
+    --bg-card: 22 30 41;
+    --fg: 241 245 249;
+    --fg-muted: 156 175 194;
+    --fg-dim: 100 116 139;
+    --border: 30 41 56;
+  }
+
+  html,
+  body,
+  #root {
+    height: 100%;
+    overscroll-behavior-y: none;
+  }
+
+  body {
+    @apply bg-bg text-fg font-sans antialiased;
+    -webkit-tap-highlight-color: transparent;
+    text-rendering: optimizeLegibility;
+  }
+
+  button {
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  /* Safe area helpers */
+  .safe-top {
+    padding-top: max(env(safe-area-inset-top), 0.5rem);
+  }
+  .safe-bottom {
+    padding-bottom: max(env(safe-area-inset-bottom), 0.5rem);
+  }
+}
+
+@layer components {
+  .card {
+    @apply bg-bg-card border border-border rounded-2xl shadow-card;
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl font-semibold
+           transition-all active:scale-95 select-none focus:outline-none
+           focus-visible:ring-2 focus-visible:ring-brand/50;
+  }
+
+  .btn-primary {
+    @apply btn bg-brand text-white hover:bg-brand-600 px-5 py-3;
+  }
+
+  .btn-secondary {
+    @apply btn bg-bg-soft text-fg border border-border hover:bg-bg-card px-5 py-3;
+  }
+
+  .btn-danger {
+    @apply btn bg-danger text-white hover:bg-danger-600 px-5 py-3;
+  }
+
+  .btn-ghost {
+    @apply btn text-fg hover:bg-bg-soft px-4 py-2;
+  }
+
+  .chip {
+    @apply inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full
+           bg-bg-soft border border-border text-sm font-medium;
+  }
+
+  .input {
+    @apply w-full bg-bg-card border border-border rounded-xl px-4 py-3
+           text-fg placeholder:text-fg-dim
+           focus:outline-none focus:ring-2 focus:ring-brand/40 focus:border-brand;
+  }
+
+  .score-digit {
+    @apply font-mono font-bold tabular-nums;
+  }
+
+  /* Big number score-grid tap targets */
+  .score-btn {
+    @apply btn bg-bg-card border border-border text-fg
+           h-16 text-2xl font-bold hover:border-brand hover:bg-brand/10
+           transition-colors;
+  }
+
+  .score-btn-boundary {
+    @apply border-brand/50 text-brand;
+  }
+
+  .score-btn-six {
+    @apply border-accent-orange/50 text-accent-orange;
+  }
+
+  .extra-btn {
+    @apply btn bg-bg-card border border-border text-fg
+           h-14 font-semibold hover:border-accent-yellow hover:bg-accent-yellow/10;
+  }
+
+  .action-btn {
+    @apply btn h-14 font-bold;
+  }
+}
+
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
