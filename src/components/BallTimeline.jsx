@@ -22,7 +22,7 @@ function Pill({ b }) {
     <span
       className={`shrink-0 inline-flex items-center justify-center min-w-[28px] h-7 px-2 rounded-full text-[11px] font-bold ${cls}`}
     >
-      {b.wicket ? 'W' : b.label}
+      {b.label}
     </span>
   );
 }
