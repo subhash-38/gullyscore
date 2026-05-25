@@ -1,11 +1,10 @@
 export default function BallTimeline({ balls = [] }) {
-  const last = balls.slice(-6);
   return (
     <div className="flex items-center gap-1 overflow-x-auto no-scrollbar">
-      {last.length === 0 && (
+      {balls.length === 0 && (
         <div className="text-xs text-fg-dim italic">No balls yet this over</div>
       )}
-      {last.map((b, i) => (
+      {balls.map((b, i) => (
         <Pill key={i} b={b} />
       ))}
     </div>

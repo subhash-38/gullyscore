@@ -6,10 +6,12 @@ import {
   StopCircle,
   Skull,
   Home as HomeIcon,
+  HeartPulse,
 } from 'lucide-react';
 import SEO from '../components/SEO.jsx';
 import BallTimeline from '../components/BallTimeline.jsx';
 import WicketModal from '../components/WicketModal.jsx';
+import RetiredHurtModal from '../components/RetiredHurtModal.jsx';
 import JokerModal from '../components/JokerModal.jsx';
 import PickerModal from '../components/PickerModal.jsx';
 import OpenersModal from '../components/OpenersModal.jsx';
@@ -28,6 +30,10 @@ import {
 } from '../utils/format.js';
 import { availableBatters, availableBowlers } from '../engine/index.js';
 
+/**
+ * LiveMatch — the main scoring screen.
+ * Handles ball input, wickets, extras, retired hurt, joker, and innings transitions.
+ */
 export default function LiveMatch() {
   const navigate = useNavigate();
   const match = useMatchStore((s) => s.match);
@@ -35,6 +41,7 @@ export default function LiveMatch() {
   const setNextBatter = useMatchStore((s) => s.setNextBatter);
   const setNextBowler = useMatchStore((s) => s.setNextBowler);
   const applyBall = useMatchStore((s) => s.applyBall);
+  const retireBatterStore = useMatchStore((s) => s.retireBatter);
   const undo = useMatchStore((s) => s.undo);
   const endInnings = useMatchStore((s) => s.endInnings);
   const startSecond = useMatchStore((s) => s.startSecondInnings);
@@ -44,6 +51,7 @@ export default function LiveMatch() {
   const showToast = useToastStore((s) => s.show);
 
   const [wicketOpen, setWicketOpen] = useState(false);
+  const [retiredOpen, setRetiredOpen] = useState(false);
   const [jokerOpen, setJokerOpen] = useState(false);
   const [endInningsOpen, setEndInningsOpen] = useState(false);
   const [extrasMode, setExtrasMode] = useState(null);
@@ -79,7 +87,12 @@ export default function LiveMatch() {
     return ids.map((id) => {
       const b = inn.batters[id];
       const isJoker = cfg.joker && id === cfg.joker.id;
-      return { id, name: b?.name || id, tag: isJoker ? 'JOKER' : null };
+      const isReturning = inn.retired.includes(id);
+      return {
+        id,
+        name: b?.name || id,
+        tag: isJoker ? 'JOKER' : isReturning ? 'RETURNING' : null,
+      };
     });
   }, [match, inn, cfg.joker]);
 
@@ -110,6 +123,7 @@ export default function LiveMatch() {
   const ballsLeft = cfg.overs * 6 - inn.legalBalls;
   const runsNeeded = target ? target - inn.runs : null;
 
+  /** Handle run/extras scoring. */
   const onRun = (n) => {
     if (extrasMode === 'bye') {
       applyBall({ kind: 'bye', runs: n });
@@ -140,16 +154,19 @@ export default function LiveMatch() {
     setExtrasMode((m) => (m === 'noball' ? null : 'noball'));
   };
 
+  /** Handle wicket confirmation from WicketModal. */
   const onWicket = (payload) => {
     setWicketOpen(false);
-    if (payload.dismissal?.type === 'retired' && payload.returnLater === false) {
-      applyBall(payload);
-      endInnings();
-      flash('Innings ended');
-      return;
-    }
     applyBall(payload);
     flash('Wicket!');
+  };
+
+  /** Handle retired hurt confirmation from RetiredHurtModal. */
+  const onRetiredHurt = ({ batterId, returnLater }) => {
+    setRetiredOpen(false);
+    const batter = inn.batters[batterId];
+    retireBatterStore({ batterId, returnLater });
+    flash(`${batter?.name || 'Batter'} retired hurt`);
   };
 
   const onActivateJoker = (replaces) => {
@@ -168,6 +185,8 @@ export default function LiveMatch() {
   const byeEnabled = cfg.rules.bye;
   const legByeEnabled = cfg.rules.legBye;
   const jokerCanCome = cfg.joker && !inn.jokerActive && !inn.jokerOut && match.status === 'live';
+  // Can retire if at least one batter is on the crease
+  const canRetire = match.status === 'live' && (!!inn.striker || !!inn.nonStriker);
 
   return (
     <div className="pb-2 -mx-4 px-4">
@@ -205,6 +224,7 @@ export default function LiveMatch() {
           onWide={onWide}
           onNoBall={onNoBall}
           onWicket={() => setWicketOpen(true)}
+          onRetired={canRetire ? () => setRetiredOpen(true) : null}
           onUndo={undo}
           onEndInnings={onEndInnings}
           onJoker={jokerCanCome ? () => setJokerOpen(true) : null}
@@ -276,6 +296,16 @@ export default function LiveMatch() {
         onConfirm={onWicket}
         freeHit={inn.freeHit}
         fielderOptions={fielderOptions}
+        strikerName={striker?.name || null}
+        nonStrikerName={nonStriker?.name || null}
+      />
+
+      <RetiredHurtModal
+        open={retiredOpen}
+        onClose={() => setRetiredOpen(false)}
+        onConfirm={onRetiredHurt}
+        striker={striker}
+        nonStriker={nonStriker}
       />
 
       <JokerModal
@@ -303,6 +333,11 @@ export default function LiveMatch() {
   );
 }
 
+/**
+ * Creates a history snapshot from the current match.
+ * @param {object} match - Current match state.
+ * @returns {object} Snapshot for history storage.
+ */
 function snapshotForHistory(match) {
   return {
     id: match.id,
@@ -442,11 +477,15 @@ function ThisOver({ currentOver }) {
   );
 }
 
+/**
+ * ScoringPad — main input area for runs, extras, wicket, retired hurt, undo, joker, end innings.
+ */
 function ScoringPad({
   onRun,
   onWide,
   onNoBall,
   onWicket,
+  onRetired,
   onUndo,
   onEndInnings,
   onJoker,
@@ -516,6 +555,11 @@ function ScoringPad({
         <button onClick={onWicket} className="action-btn bg-danger text-white">
           <Skull className="h-5 w-5" /> Wicket
         </button>
+        {onRetired && (
+          <button onClick={onRetired} className="action-btn bg-accent-orange/20 border border-accent-orange text-accent-orange">
+            <HeartPulse className="h-5 w-5" /> Retired Hurt
+          </button>
+        )}
         <button onClick={onUndo} className="action-btn bg-bg-soft border border-border">
           <Undo2 className="h-5 w-5" /> Undo
         </button>
@@ -524,7 +568,7 @@ function ScoringPad({
             <Sparkles className="h-5 w-5" /> Use joker
           </button>
         )}
-        <button onClick={onEndInnings} className={`action-btn bg-bg-soft border border-border ${onJoker ? '' : 'col-span-1'}`}>
+        <button onClick={onEndInnings} className="action-btn bg-bg-soft border border-border">
           <StopCircle className="h-5 w-5" /> End innings
         </button>
       </div>
@@ -532,6 +576,11 @@ function ScoringPad({
   );
 }
 
+/**
+ * Returns a user-facing prompt for the current extras mode.
+ * @param {string} mode - Current extras mode.
+ * @returns {string} Prompt text.
+ */
 function extrasModePrompt(mode) {
   switch (mode) {
     case 'bye':

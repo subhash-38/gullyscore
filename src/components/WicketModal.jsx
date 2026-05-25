@@ -2,24 +2,45 @@ import { useState } from 'react';
 import Modal from './Modal.jsx';
 import { DISMISSAL_TYPES } from '../data/defaults.js';
 
-export default function WicketModal({ open, onClose, onConfirm, freeHit, fielderOptions = [] }) {
+/**
+ * WicketModal — asks user for dismissal type, fielder, and (for runout) which batter is out.
+ * @param {boolean} open - Whether the modal is visible.
+ * @param {function} onClose - Called when user cancels.
+ * @param {function} onConfirm - Called with the wicket payload.
+ * @param {boolean} freeHit - Whether a free hit is active (only runout counts).
+ * @param {Array} fielderOptions - List of fielders for caught/stumped/runout.
+ * @param {string|null} strikerName - Name of the current striker.
+ * @param {string|null} nonStrikerName - Name of the current non-striker.
+ */
+export default function WicketModal({
+  open,
+  onClose,
+  onConfirm,
+  freeHit,
+  fielderOptions = [],
+  strikerName = null,
+  nonStrikerName = null,
+}) {
   const [type, setType] = useState(null);
   const [fielderId, setFielderId] = useState(null);
-  const [retiredOption, setRetiredOption] = useState('returnLater');
   const [runs, setRuns] = useState(0);
+  const [outBatter, setOutBatter] = useState('striker');
 
+  /** Reset all local state to defaults. */
   const reset = () => {
     setType(null);
     setFielderId(null);
-    setRetiredOption('returnLater');
     setRuns(0);
+    setOutBatter('striker');
   };
 
+  /** Close modal and reset state. */
   const close = () => {
     reset();
     onClose?.();
   };
 
+  /** Build payload and confirm the wicket. */
   const confirm = () => {
     if (!type) return;
     const fielderName = fielderId
@@ -31,8 +52,9 @@ export default function WicketModal({ open, onClose, onConfirm, freeHit, fielder
       dismissal,
       runs: type === 'runout' ? Number(runs) || 0 : 0,
     };
-    if (type === 'retired') {
-      payload.returnLater = retiredOption === 'returnLater';
+    // For runout, tell the engine which batter is out
+    if (type === 'runout') {
+      payload.dismissal.outBatter = outBatter;
     }
     onConfirm?.(payload);
     reset();
@@ -42,7 +64,7 @@ export default function WicketModal({ open, onClose, onConfirm, freeHit, fielder
   const valid =
     type &&
     (!meta?.askCatcher || fielderId) &&
-    (type !== 'retired' || retiredOption);
+    (type !== 'runout' || outBatter);
 
   return (
     <Modal
@@ -109,50 +131,56 @@ export default function WicketModal({ open, onClose, onConfirm, freeHit, fielder
       )}
 
       {type === 'runout' && (
-        <div className="mt-3">
-          <label className="block text-xs font-semibold text-fg-muted mb-1">
-            Runs completed before run out
-          </label>
-          <div className="flex gap-2">
-            {[0, 1, 2, 3].map((n) => (
+        <>
+          {/* Who got run out? */}
+          <div className="mt-4">
+            <div className="text-xs font-semibold text-fg-muted mb-1.5">
+              Who got run out?
+            </div>
+            <div className="flex gap-2">
               <button
-                key={n}
-                onClick={() => setRuns(n)}
-                className={`chip flex-1 justify-center py-2 ${
-                  runs === n ? '!bg-brand !text-white !border-brand' : ''
+                onClick={() => setOutBatter('striker')}
+                className={`chip flex-1 justify-center py-2.5 ${
+                  outBatter === 'striker' ? '!bg-danger !text-white !border-danger' : ''
                 }`}
               >
-                {n}
+                <span className="font-semibold">{strikerName || 'Striker'}</span>
+                <span className="text-[10px] opacity-75 ml-1">(Striker)</span>
               </button>
-            ))}
+              {nonStrikerName && (
+                <button
+                  onClick={() => setOutBatter('nonStriker')}
+                  className={`chip flex-1 justify-center py-2.5 ${
+                    outBatter === 'nonStriker' ? '!bg-danger !text-white !border-danger' : ''
+                  }`}
+                >
+                  <span className="font-semibold">{nonStrikerName || 'Non-Striker'}</span>
+                  <span className="text-[10px] opacity-75 ml-1">(Non-Striker)</span>
+                </button>
+              )}
+            </div>
           </div>
-        </div>
-      )}
 
-      {type === 'retired' && (
-        <div className="mt-4">
-          <div className="text-xs font-semibold text-fg-muted mb-1">
-            Retired hurt option
+          {/* Runs completed before run out */}
+          <div className="mt-3">
+            <label className="block text-xs font-semibold text-fg-muted mb-1">
+              Runs completed before run out
+            </label>
+            <div className="flex gap-2">
+              {[0, 1, 2, 3].map((n) => (
+                <button
+                  key={n}
+                  onClick={() => setRuns(n)}
+                  className={`chip flex-1 justify-center py-2 ${
+                    runs === n ? '!bg-brand !text-white !border-brand' : ''
+                  }`}
+                >
+                  {n}
+                </button>
+              ))}
+            </div>
           </div>
-          <div className="flex gap-2">
-            <button
-              onClick={() => setRetiredOption('returnLater')}
-              className={`chip flex-1 justify-center py-2 ${
-                retiredOption === 'returnLater' ? '!bg-brand !text-white !border-brand' : ''
-              }`}
-            >
-              Will return later
-            </button>
-            <button
-              onClick={() => setRetiredOption('inningsEnded')}
-              className={`chip flex-1 justify-center py-2 ${
-                retiredOption === 'inningsEnded' ? '!bg-brand !text-white !border-brand' : ''
-              }`}
-            >
-              Innings ended
-            </button>
-          </div>
-        </div>
+        </>
       )}
     </Modal>
   );

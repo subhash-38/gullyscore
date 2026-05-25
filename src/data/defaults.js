@@ -15,7 +15,6 @@ export const DISMISSAL_TYPES = [
   { id: 'runout', label: 'Run Out', creditBowler: false, askCatcher: true, catcherLabel: 'Run out by' },
   { id: 'stumped', label: 'Stumped', creditBowler: true, askCatcher: true, catcherLabel: 'Stumped by' },
   { id: 'hitwicket', label: 'Hit Wicket', creditBowler: true, askCatcher: false },
-  { id: 'retired', label: 'Retired Hurt', creditBowler: false, askCatcher: false },
 ];
 
 export const TEAM_COLORS = {
