@@ -404,7 +404,7 @@ export function applyBall(state, eventInput) {
     bowler._currentOverRuns = 0;
     inn.overs.push(inn.currentOver);
     inn.currentOver = [];
-    if (!inn.singleBatterMode && inn.striker && inn.nonStriker) {
+    if (!inn.singleBatterMode) {
       [inn.striker, inn.nonStriker] = [inn.nonStriker, inn.striker];
     }
     inn.previousBowler = inn.bowler;
