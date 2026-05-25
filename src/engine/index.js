@@ -324,7 +324,12 @@ export function applyBall(state, eventInput) {
     // For all other dismissals, it's always the striker
     const isRunout = d.type === 'runout';
     const outPosition = isRunout ? (d.outBatter || 'striker') : 'striker';
-    const outBatterId = outPosition === 'nonStriker' ? inn.nonStriker : inn.striker;
+
+    // Save the original IDs of the batters on crease BEFORE any clearing
+    const originalStrikerId = inn.striker;
+    const originalNonStrikerId = inn.nonStriker;
+
+    const outBatterId = outPosition === 'nonStriker' ? originalNonStrikerId : originalStrikerId;
     const outBatter = inn.batters[outBatterId];
 
     if (outBatter) {
@@ -344,10 +349,41 @@ export function applyBall(state, eventInput) {
         inn.jokerActive = false;
       }
 
-      // Clear the dismissed batter's crease position
-      if (outPosition === 'nonStriker') {
-        inn.nonStriker = null;
+      // Clear creases and place the remaining batter in their correct crease
+      if (isRunout) {
+        const remainingBatterId = outPosition === 'nonStriker' ? originalStrikerId : originalNonStrikerId;
+        if (remainingBatterId) {
+          const r = clampRuns(event.runs || 0);
+          const crossed = !!d.crossed; // passed in the dismissal object
+          const totalCrossings = r + (crossed ? 1 : 0);
+          const endsUpOpposite = totalCrossings % 2 === 1;
+          const remainingBatterOriginalRole = outPosition === 'nonStriker' ? 'striker' : 'nonStriker';
+
+          if (endsUpOpposite) {
+            if (remainingBatterOriginalRole === 'striker') {
+              inn.nonStriker = remainingBatterId;
+              inn.striker = null;
+            } else {
+              inn.striker = remainingBatterId;
+              inn.nonStriker = null;
+            }
+          } else {
+            if (remainingBatterOriginalRole === 'striker') {
+              inn.striker = remainingBatterId;
+              inn.nonStriker = null;
+            } else {
+              inn.nonStriker = remainingBatterId;
+              inn.striker = null;
+            }
+          }
+        } else {
+          // If single batter mode or only 1 batter was on crease
+          inn.striker = null;
+          inn.nonStriker = null;
+        }
       } else {
+        // For all other wickets, it's always the striker that is dismissed,
+        // and the non-striker remains in their crease.
         inn.striker = null;
       }
     }

@@ -4,7 +4,7 @@ import { Trophy, RotateCw, Shuffle, UserPlus, UserMinus, Users, Coins, Home as H
 import SEO from '../components/SEO.jsx';
 import { useHistoryStore } from '../store/historyStore.js';
 import { useMatchStore } from '../store/matchStore.js';
-import { fmt1, fmt2, formatOvers, strikeRate, economy, shortDateTime } from '../utils/format.js';
+import { fmt1, fmt2, formatOvers, strikeRate, economy, shortDateTime, formatDismissal } from '../utils/format.js';
 
 export default function Summary() {
   const [params] = useSearchParams();
@@ -252,26 +252,6 @@ function InningsCard({ label, inn, config }) {
       )}
     </section>
   );
-}
-
-function formatDismissal(d) {
-  if (!d) return 'not out';
-  switch (d.type) {
-    case 'bowled':
-      return `b ${d.bowler || ''}`;
-    case 'caught':
-      return `c ${d.fielder || ''} b ${d.bowler || ''}`;
-    case 'runout':
-      return `run out${d.fielder ? ' (' + d.fielder + ')' : ''}`;
-    case 'stumped':
-      return `st ${d.fielder || ''} b ${d.bowler || ''}`;
-    case 'hitwicket':
-      return `hit wkt b ${d.bowler || ''}`;
-    case 'retired':
-      return 'retired';
-    default:
-      return d.type;
-  }
 }
 
 function findTopScorer(innings) {

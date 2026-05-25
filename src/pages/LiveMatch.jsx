@@ -7,11 +7,13 @@ import {
   Skull,
   Home as HomeIcon,
   HeartPulse,
+  BookOpen,
 } from 'lucide-react';
 import SEO from '../components/SEO.jsx';
 import BallTimeline from '../components/BallTimeline.jsx';
 import WicketModal from '../components/WicketModal.jsx';
 import RetiredHurtModal from '../components/RetiredHurtModal.jsx';
+import ScorecardModal from '../components/ScorecardModal.jsx';
 import JokerModal from '../components/JokerModal.jsx';
 import PickerModal from '../components/PickerModal.jsx';
 import OpenersModal from '../components/OpenersModal.jsx';
@@ -54,6 +56,7 @@ export default function LiveMatch() {
   const [retiredOpen, setRetiredOpen] = useState(false);
   const [jokerOpen, setJokerOpen] = useState(false);
   const [endInningsOpen, setEndInningsOpen] = useState(false);
+  const [scorecardOpen, setScorecardOpen] = useState(false);
   const [extrasMode, setExtrasMode] = useState(null);
 
   useEffect(() => {
@@ -206,6 +209,7 @@ export default function LiveMatch() {
         freeHit={inn.freeHit}
         singleBatter={inn.singleBatterMode}
         inningsNumber={match.current + 1}
+        onViewScorecard={() => setScorecardOpen(true)}
       />
 
       <BattersCard
@@ -328,6 +332,12 @@ export default function LiveMatch() {
         message="Are you sure you want to end the innings now?"
       />
 
+      <ScorecardModal
+        open={scorecardOpen}
+        onClose={() => setScorecardOpen(false)}
+        match={match}
+      />
+
       <BackToHomeFooter />
     </div>
   );
@@ -363,6 +373,7 @@ function ScoreHeader({
   freeHit,
   singleBatter,
   inningsNumber,
+  onViewScorecard,
 }) {
   return (
     <div className="sticky top-14 z-20 -mx-4 px-4 py-2 bg-bg/95 backdrop-blur-md border-b border-border">
@@ -380,9 +391,17 @@ function ScoreHeader({
             </div>
           </div>
         </div>
-        <div className="text-right text-xs">
-          <div className="text-fg-muted">CRR</div>
-          <div className="font-bold font-mono">{fmt2(crr)}</div>
+        <div className="flex items-center gap-3.5">
+          <div className="text-right text-xs">
+            <div className="text-fg-muted">CRR</div>
+            <div className="font-bold font-mono">{fmt2(crr)}</div>
+          </div>
+          <button
+            onClick={onViewScorecard}
+            className="chip flex items-center gap-1.5 py-1.5 px-3 text-xs font-extrabold bg-brand/10 border-brand/35 text-brand hover:bg-brand/20 transition-all cursor-pointer"
+          >
+            <BookOpen className="h-3.5 w-3.5" /> Scorecard
+          </button>
         </div>
       </div>
 

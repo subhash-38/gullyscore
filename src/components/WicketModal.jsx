@@ -25,6 +25,7 @@ export default function WicketModal({
   const [fielderId, setFielderId] = useState(null);
   const [runs, setRuns] = useState(0);
   const [outBatter, setOutBatter] = useState('striker');
+  const [crossed, setCrossed] = useState(false);
 
   /** Reset all local state to defaults. */
   const reset = () => {
@@ -32,6 +33,7 @@ export default function WicketModal({
     setFielderId(null);
     setRuns(0);
     setOutBatter('striker');
+    setCrossed(false);
   };
 
   /** Close modal and reset state. */
@@ -52,9 +54,10 @@ export default function WicketModal({
       dismissal,
       runs: type === 'runout' ? Number(runs) || 0 : 0,
     };
-    // For runout, tell the engine which batter is out
+    // For runout, tell the engine which batter is out and if they crossed
     if (type === 'runout') {
       payload.dismissal.outBatter = outBatter;
+      payload.dismissal.crossed = crossed;
     }
     onConfirm?.(payload);
     reset();
@@ -179,6 +182,24 @@ export default function WicketModal({
                 </button>
               ))}
             </div>
+          </div>
+
+          {/* Did the batters cross? */}
+          <div className="mt-4 flex items-center justify-between card p-3 border-dashed border-border">
+            <div>
+              <div className="text-xs font-bold">Did the batters cross?</div>
+              <div className="text-[10px] text-fg-muted mt-0.5">
+                Toggle if they crossed ends during the runout attempt
+              </div>
+            </div>
+            <button
+              onClick={() => setCrossed(!crossed)}
+              className={`chip px-4 py-2 font-bold ${
+                crossed ? '!bg-brand !text-white !border-brand' : ''
+              }`}
+            >
+              {crossed ? 'Yes' : 'No'}
+            </button>
           </div>
         </>
       )}

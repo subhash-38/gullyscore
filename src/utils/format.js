@@ -60,3 +60,23 @@ export function shortDateTime(ts) {
     return '';
   }
 }
+
+export function formatDismissal(d) {
+  if (!d) return 'not out';
+  switch (d.type) {
+    case 'bowled':
+      return `b ${d.bowler || ''}`;
+    case 'caught':
+      return `c ${d.fielder || ''} b ${d.bowler || ''}`;
+    case 'runout':
+      return `run out${d.fielder ? ' (' + d.fielder + ')' : ''}`;
+    case 'stumped':
+      return `st ${d.fielder || ''} b ${d.bowler || ''}`;
+    case 'hitwicket':
+      return `hit wkt b ${d.bowler || ''}`;
+    case 'retired':
+      return 'retired';
+    default:
+      return d.type;
+  }
+}
