@@ -49,7 +49,6 @@ function RelatedLinks() {
     { to: '/gully-cricket-rules', title: 'Gully cricket rules' },
     { to: '/how-to-score-gully-cricket', title: 'How to score gully cricket' },
     { to: '/tennis-ball-cricket-rules', title: 'Tennis ball cricket rules' },
-    { to: '/street-cricket-scoring-guide', title: 'Street cricket scoring guide' },
   ];
   return (
     <section>

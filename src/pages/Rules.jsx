@@ -94,7 +94,6 @@ export default function Rules() {
           <LearnCard to="/gully-cricket-rules" title="Gully cricket rules" />
           <LearnCard to="/how-to-score-gully-cricket" title="How to score gully cricket" />
           <LearnCard to="/tennis-ball-cricket-rules" title="Tennis ball cricket rules" />
-          <LearnCard to="/street-cricket-scoring-guide" title="Street cricket scoring guide" />
         </div>
       </div>
     </div>

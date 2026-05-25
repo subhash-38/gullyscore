@@ -14,7 +14,6 @@ import { useTheme } from './hooks/useTheme.js';
 const GullyCricketRules = lazy(() => import('./pages/seo/GullyCricketRules.jsx'));
 const HowToScore = lazy(() => import('./pages/seo/HowToScore.jsx'));
 const TennisBallRules = lazy(() => import('./pages/seo/TennisBallRules.jsx'));
-const StreetCricketGuide = lazy(() => import('./pages/seo/StreetCricketGuide.jsx'));
 
 export default function App() {
   useTheme();
@@ -33,7 +32,6 @@ export default function App() {
           <Route path="/gully-cricket-rules" element={<GullyCricketRules />} />
           <Route path="/how-to-score-gully-cricket" element={<HowToScore />} />
           <Route path="/tennis-ball-cricket-rules" element={<TennisBallRules />} />
-          <Route path="/street-cricket-scoring-guide" element={<StreetCricketGuide />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>

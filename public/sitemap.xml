@@ -21,11 +21,6 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://gullycricketscore.vercel.app/street-cricket-scoring-guide</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
     <loc>https://gullycricketscore.vercel.app/rules</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
